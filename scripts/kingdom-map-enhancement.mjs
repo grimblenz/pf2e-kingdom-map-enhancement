@@ -23,10 +23,8 @@ Hooks.once("init", function() {
 /* -------------------------------------------- */
 
 Hooks.once("setup", function() {
-    CONFIG.debug.hooks = true;
     console.log("Kingdom | Initializing Kingdom Map Enhancement");
     kingdominfo.kingdomInfoMap = new KingdomInfoMap();
-
 });
 
 /* -------------------------------------------- */
