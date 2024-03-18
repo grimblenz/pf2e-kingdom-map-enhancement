@@ -4,7 +4,7 @@ import KingdomInfoMap from "./kingdom-info-map.mjs";
  * The ID of the Kingmaker module
  * @type {string}
  */
-const MODULE_ID = "pf2e-kingmaker-map-enhancement";
+const MODULE_ID = "pf2e-kingdom-map-enhancement";
 
 /* -------------------------------------------- */
 /*  Initialization                              */
