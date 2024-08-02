@@ -1,4 +1,4 @@
-name: Create Release
+name: Create Module Release
 
 on: 
   release:
@@ -8,33 +8,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    # Update the Manifest and Download URLs in the module.json to a versioned path
-    - name: Update the Manifest and Download URLs in the module.json to a versioned path
-      id: update_manifest_link_version
+    # get the version number from the tag
+    - name: Extract tag version number
+      id: get_version
+      uses: battila7/get-version-action@v2
+
+    # replace links in the manifest with the versioned ones
+    - name: Substitute Manifest and Download Links For Versioned Ones
+      id: sub_manifest
       uses: microsoft/variable-substitution@v1
       with:
-        files: 'module.json'
+        files: 'src/module.json'
       env:
-        version: ${{github.event.release.tag_name}}
+        version: ${{steps.get_version.outputs.version-without-v}}
         url: https://github.com/${{github.repository}}
         manifest: https://github.com/${{github.repository}}/releases/latest/download/module.json
         download: https://github.com/${{github.repository}}/releases/download/${{github.event.release.tag_name}}/module.zip
+        bugs: https://github.com/${{github.repository}}/issues
 
-    # Create a zip file for the module
-    - run: zip -r ./module.zip module.json scripts/
+    - name: Create Zip File
+      working-directory: src
+      run: zip -r ./module.zip module.json assets/ scripts/
 
-    # Create a release for this version
-    - name: Update Release with Files
+    # Create release
+    - name: Create Release
       id: create_version_release
       uses: ncipollo/release-action@v1
       with:
-        allowUpdates: true
+        allowUpdates: true # Set this to false if you want to prevent updating existing releases
         name: ${{ github.event.release.name }}
-        draft: false
-        token: ${{ secrets.GITHUB_TOKEN }}
-        prerelease: false
-        artifacts: './module.json, ./module.zip'
+        prerelease: ${{ github.event.release.prerelease }}
+        artifacts: 'src/module.json, src/module.zip'
         tag: ${{ github.event.release.tag_name }}
         body: ${{ github.event.release.body }}
