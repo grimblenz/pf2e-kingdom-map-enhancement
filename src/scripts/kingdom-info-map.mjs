@@ -52,6 +52,7 @@ export default class KingdomInfoMap {
     if ( !this.active ) return;
     if ( canvas.visibilityOptions ) canvas.visibilityOptions.persistentVision = true;
     this.kingdomInfoLayer = new KingdomInfoLayer();
+    this.kingdomInfoLayer.loadTextures();
 
   }
 
