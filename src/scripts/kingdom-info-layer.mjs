@@ -104,7 +104,7 @@ export default class KingdomInfoLayer extends PIXI.Container {
           } else if (features[i].type == "structure") {
             var featex = this.assets["feat_structure"];
           } else if (features[i].type == "road") {
-            var featex = this.assets["feat_roadm"];
+            var featex = this.assets["feat_road"];
           } else if (features[i].type == "bridge") {
             var featex = this.assets["feat_bridge"];
           } else if (features[i].type == "ruin") {
