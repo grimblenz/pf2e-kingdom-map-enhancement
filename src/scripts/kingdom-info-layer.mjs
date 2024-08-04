@@ -7,55 +7,46 @@ export default class KingdomInfoLayer extends PIXI.Container {
       super();
       this.zIndex = 1;
       this.visible = true;
-      // this.recontext = this.getTexture("modules/pf2e-kingmaker-map-enhancement/images/hex_reconoitered.png");
+      // Create a resource bundle for the icons and load them
+      this.assets = null;
     }
-
-  /** Try-catch wrapper around loadTexture. */
-  getTexture = async (path) => {
-    try {
-      texture = await loadTexture(path);
-      if (!texture) {
-        ui.notifications.error(
-          `${game.i18n.localize("DD.TextureLoadFailure")}: ${path}`
-        );
-      }
-      return texture;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  
+  /**
+   *  load textures for the KingdomInfoLayer
+   */
+  async loadTextures() {
+    PIXI.Assets.addBundle("kingdom-info-layer", [
+      { alias: "recon", src: "modules/pf2e-kingdom-map-enhancement/assets/img/recon.png" },
+      { alias: "camp_quarry", src: "modules/pf2e-kingdom-map-enhancement/assets/img/quarry.png" },
+      { alias: "camp_lumber", src: "modules/pf2e-kingdom-map-enhancement/assets/img/lumbercamp.png" },
+      { alias: "camp_mine", src: "modules/pf2e-kingdom-map-enhancement/assets/img/mine.png" },
+      { alias: "res_ore", src: "modules/pf2e-kingdom-map-enhancement/assets/img/ore.png" },
+      { alias: "res_food", src: "modules/pf2e-kingdom-map-enhancement/assets/img/wheat.png" },
+      { alias: "res_lumber", src: "modules/pf2e-kingdom-map-enhancement/assets/img/lumber.png" },
+      { alias: "res_stone", src: "modules/pf2e-kingdom-map-enhancement/assets/img/stone.png" },
+      { alias: "res_luxuries", src: "modules/pf2e-kingdom-map-enhancement/assets/img/luxuries.png" },
+      { alias: "feat_farm", src: "modules/pf2e-kingdom-map-enhancement/assets/img/farmer.png" },
+      { alias: "feat_landmark", src: "modules/pf2e-kingdom-map-enhancement/assets/img/landmark.png" },
+      { alias: "feat_refuge", src: "modules/pf2e-kingdom-map-enhancement/assets/img/refuge.png" },
+      { alias: "feat_ruin", src: "modules/pf2e-kingdom-map-enhancement/assets/img/ruin.png" },
+      { alias: "feat_ford", src: "modules/pf2e-kingdom-map-enhancement/assets/img/ford.png" },
+      { alias: "feat_waterfall", src: "modules/pf2e-kingdom-map-enhancement/assets/img/waterfall.png" },
+      { alias: "feat_hazard", src: "modules/pf2e-kingdom-map-enhancement/assets/img/hazard.png" },
+      { alias: "feat_bloom", src: "modules/pf2e-kingdom-map-enhancement/assets/img/bloom.png" },
+      { alias: "feat_structure", src: "modules/pf2e-kingdom-map-enhancement/assets/img/structure.png" },
+      { alias: "feat_road", src: "modules/pf2e-kingdom-map-enhancement/assets/img/road.png" },
+      { alias: "feat_bridge", src: "modules/pf2e-kingdom-map-enhancement/assets/img/bridge.png" },
+      { alias: "feat_town", src: "modules/pf2e-kingdom-map-enhancement/assets/img/town.png" },
+    ]);
+    this.assets = await PIXI.Assets.loadBundle("kingdom-info-layer");
+  }
 
   /**
    * Draw the layer.
    */
- async draw() {
+  async draw() {
     this.removeChildren().forEach(c => c.destroy());
     this.mask = canvas.primary.mask;
-    // recnoitered icon
-    const recontex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/recon.png");
-    // Camp icons
-    const quarrytex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/quarry.png");
-    const minetex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/mine.png");
-    const lumbercamptex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/lumbercamp.png");
-    // Resource icons
-    const oretex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/ore.png");
-    const foodtex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/wheat.png");
-    const lumbertex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/lumber.png");
-    const stonetex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/stone.png");
-    const luxuriestex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/luxuries.png");
-    // Feature icons
-    const farmtex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/farmer.png");
-    const landmarktex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/landmark.png");
-    const refugetex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/refuge.png");
-    const ruintex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/ruin.png");
-    const fordtex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/ford.png");
-    const waterfalltex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/waterfall.png");
-    const hazardtex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/hazard.png");
-    const bloomtex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/bloom.png");
-    const structuretex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/structure.png");
-    const roadtex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/road.png");
-    const bridgetex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/bridge.png");
-    const towntex = await PIXI.Assets.load("modules/pf2e-kingdom-map-enhancement/assets/img/town.png");
 
     const icon_size = 36;
     const scalefactor = icon_size / 512
@@ -68,25 +59,46 @@ export default class KingdomInfoLayer extends PIXI.Container {
       const ty = hex.topLeft.y;
 
       // Mark the hex as reconnoitered
-      const reconimg = this.addChild(new PIXI.Sprite(recontex));
+      const reconimg = this.addChild(new PIXI.Sprite(this.assets["recon"]));
       reconimg.anchor.set(0.5, 0.5);
       reconimg.position.set(x, (ty + (y - ty) / 4));
       reconimg.scale.set(scalefactor, scalefactor);
 
-      // if camp is defined, add camp icon
-      if (hex.data.camp != "") {
-        // Add work camp icons
-        if (hex.data.camp == "quarry") {
-          var camptex = quarrytex;
-        } else if (hex.data.camp == "lumber") {
-          var camptex = lumbercamptex;
-        } else if (hex.data.camp == "mine") {
-          var camptex = minetex;
+      if (hex.data.showResources == true) {
+        // if camp is defined, add camp icon
+        if (hex.data.camp != "") {
+          // Add work camp icons
+          if (hex.data.camp == "quarry") {
+            var camptex = this.assets["camp_quarry"];
+          } else if (hex.data.camp == "lumber") {
+            var camptex = this.assets["camp_lumber"];;
+          } else if (hex.data.camp == "mine") {
+            var camptex = this.assets["camp_mine"];;
+          }
+          const campimg = this.addChild(new PIXI.Sprite(camptex));
+          campimg.anchor.set(0.5, 0.5);
+          campimg.position.set(x + (x - tx) / 2, (ty + (y - ty) / 2));
+          campimg.scale.set(scalefactor, scalefactor);
         }
-        const campimg = this.addChild(new PIXI.Sprite(camptex));
-        campimg.anchor.set(0.5, 0.5);
-        campimg.position.set(x + (x - tx) / 2, (ty + (y - ty) / 2));
-        campimg.scale.set(scalefactor, scalefactor);
+
+        if (hex.data.commodity != "") {
+          // Add resource icons
+          if (hex.data.commodity == "stone") {
+            var restex = this.assets["res_stone"];
+          } else if (hex.data.commodity == "lumber") {
+            var restex = this.assets["res_lumber"];
+          } else if (hex.data.commodity == "ore") {
+            var restex = this.assets["res_ore"];
+          } else if (hex.data.commodity == "food") {
+            var restex = this.assets["res_food"];
+          } else if (hex.data.commodity == "luxuries") {
+            var restex = this.assets["res_luxuries"];
+          }
+          const resimg = this.addChild(new PIXI.Sprite(restex));
+          resimg.anchor.set(0.5, 0.5);
+          resimg.position.set(tx + (x - tx) / 2, (ty + (y - ty) / 2));
+          resimg.scale.set(scalefactor, scalefactor);
+        }
       }
 
       // Add feature icons
@@ -98,32 +110,33 @@ export default class KingdomInfoLayer extends PIXI.Container {
         const featlist_y = y + (y - ty) / 3;
         // for each feature in the hex, add the icon
         for (let i = 0; i < num_features; i++) {
+          if (hex.data.features[i].discovered == true) {
             var feat_x = featlist_x + ((i % icons_per_row) * (icon_size + icon_pad));
             var feat_y = featlist_y - (Math.floor(i / icons_per_row) * (icon_size + icon_pad));
             if (hex.data.features[i].type == "farmland") {
-              var featex = farmtex;
+              var featex = this.assets["feat_farm"];
             } else if (hex.data.features[i].type == "landmark") {
-              var featex = landmarktex;
+              var featex = this.assets["feat_landmark"];
             } else if (hex.data.features[i].type == "refuge") {
-              var featex = refugetex;
+              var featex = this.assets["feat_refuge"];
             } else if (hex.data.features[i].type == "structure") {
-              var featex = structuretex;
+              var featex = this.assets["feat_structure"];
             } else if (hex.data.features[i].type == "road") {
-              var featex = roadtex;
+              var featex = this.assets["feat_roadm"];
             } else if (hex.data.features[i].type == "bridge") {
-              var featex = bridgetex;
+              var featex = this.assets["feat_bridge"];
             } else if (hex.data.features[i].type == "ruin") {
-              var featex = ruintex;
+              var featex = this.assets["feat_ruin"];
             } else if (hex.data.features[i].type == "hazard") {
-              var featex = hazardtex;
+              var featex = this.assets["feat_hazard"];
             } else if (hex.data.features[i].type == "bloom") {
-              var featex = bloomtex;
+              var featex = this.assets["feat_bloom"];
             } else if (hex.data.features[i].type == "ford") {
-              var featex = fordtex;
+              var featex = this.assets["feat_ford"];
             } else if (hex.data.features[i].type == "waterfall") {
-              var featex = waterfalltex;
+              var featex = this.assets["feat_waterfall"];
             } else if (hex.data.features[i].type == "freehold" || hex.data.features[i].type == "village"|| hex.data.features[i].type == "town" || hex.data.features[i].type == "city" || hex.data.features[i].type == "metropolis") {
-              var featex = towntex;
+              var featex = this.assets["feat_town"];
             } else {
               continue;
             }
@@ -133,26 +146,9 @@ export default class KingdomInfoLayer extends PIXI.Container {
             featimg.scale.set(scalefactor, scalefactor);
           }
         }
-
-      
-      if (hex.data.commodity != "") {
-        // Add resource icons
-        if (hex.data.commodity == "stone") {
-          var restex = stonetex;
-        } else if (hex.data.commodity == "lumber") {
-          var restex = lumbertex;
-        } else if (hex.data.commodity == "ore") {
-          var restex = oretex;
-        } else if (hex.data.commodity == "food") {
-          var restex = foodtex;
-        } else if (hex.data.commodity == "luxuries") {
-          var restex = luxuriestex;
-        }
-        const resimg = this.addChild(new PIXI.Sprite(restex));
-        resimg.anchor.set(0.5, 0.5);
-        resimg.position.set(tx + (x - tx) / 2, (ty + (y - ty) / 2));
-        resimg.scale.set(scalefactor, scalefactor);
       }
+
+
     }
   }
 
