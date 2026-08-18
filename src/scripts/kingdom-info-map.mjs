@@ -111,8 +111,10 @@ export default class KingdomInfoMap {
    * @internal
    */
   _extendSceneControlButtons(buttons) {
-    if ( canvas.id !== this.constructor.SCENE_ID ) return;
-    const tokens = buttons.find(b => b.name === "token");
+    if ( canvas.scene?.id !== this.constructor.SCENE_ID ) return;
+    const tokens = buttons.tokens;
+    if ( !tokens ) return;
+
     this.#infoTool = {
       name: "info",
       title: "Toggle Kingdom Info",
@@ -120,9 +122,9 @@ export default class KingdomInfoMap {
       visible: true,
       toggle: true,
       active: this.kingdomInfoLayer.visible ?? false,
-      onClick: () => this.kingdomInfoLayer.visible = !this.kingdomInfoLayer.visible
+      onChange: (_event, active) => this.kingdomInfoLayer.visible = active
     };
-    tokens.tools.push(this.#infoTool);
+    tokens.tools[this.#infoTool.name] = this.#infoTool;
   };
 
   _onUpdateSetting() {
