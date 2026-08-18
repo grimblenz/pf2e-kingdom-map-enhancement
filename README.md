@@ -2,6 +2,8 @@
 
 This is a module for Foundry Virtual Tabletop (VTT) that enhances the kingdom map functionality for the Pathfinder 2nd Edition (PF2E) system.
 
+Requires Foundry VTT version 14.
+
 ## Features
 
 - Adds icons on the Stolen Lands map for different hex properties

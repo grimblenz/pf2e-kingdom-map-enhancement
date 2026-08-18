@@ -3,8 +3,8 @@
     "title": "PF2e Kingdom Map Enhancement",
     "version": "0.0.6",
     "compatibility": {
-        "minimum": "12",
-        "verified": "12"
+        "minimum": "14",
+        "verified": "14"
     },
     "relationships": {
         "requires": [
