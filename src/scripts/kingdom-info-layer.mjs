@@ -9,6 +9,7 @@ export default class KingdomInfoLayer extends PIXI.Container {
       this.visible = true;
       // Create a resource bundle for the icons and load them
       this.assets = null;
+      this.reconOutline = null;
     }
   
   /**
@@ -29,17 +30,18 @@ export default class KingdomInfoLayer extends PIXI.Container {
     const scalefactor = icon_size / 512 //really need to replace this so we dont assume 512x512 icons
     const icon_pad = 10
     const hexes = kingmaker.region.hexes.filter(h => h.data.exploration == 1);
-    const reconOutline = this.addChild(new PIXI.Graphics());
-    reconOutline.lineStyle({color: 0x00ff00, width: 4});
+    this.reconOutline = this.addChild(new PIXI.Graphics());
+    this.reconOutline.lineStyle({color: 0x00ff00, width: 4});
+    KingdomInfoLayer.#drawRegionOutline(
+      this.reconOutline,
+      hexes.filter(hex => !hex.data.claimed)
+    );
+    this.setHexControlsActive(kingmaker.region.hud.enabled);
 
     for ( const hex of hexes ) {
       const {x, y} = hex.center;
       const tx = hex.topLeft.x;
       const ty = hex.topLeft.y;
-
-      if (!hex.data.claimed) {
-        reconOutline.drawShape(KingdomInfoLayer.#buildHexPolygon(hex));
-      }
 
       if (hex.data.showResources == true) {
         
@@ -136,14 +138,51 @@ export default class KingdomInfoLayer extends PIXI.Container {
   }
 
   /**
-    * Build a polygon matching the map grid's hex.
+    * Match the reconnoitered outline visibility to the built-in hex controls.
     */
-  static #buildHexPolygon(hex) {
+  setHexControlsActive(active) {
+    if (this.reconOutline) this.reconOutline.visible = active;
+  }
+
+  /**
+   * Draw only edges that are not shared by two reconnoitered hexes.
+   */
+  static #drawRegionOutline(graphics, hexes) {
+    const edges = new Map();
+
+    for (const hex of hexes) {
+      const vertices = KingdomInfoLayer.#buildHexVertices(hex);
+      for (let i = 0; i < vertices.length; i++) {
+        const start = vertices[i];
+        const end = vertices[(i + 1) % vertices.length];
+        const key = KingdomInfoLayer.#buildEdgeKey(start, end);
+
+        if (edges.has(key)) edges.delete(key);
+        else edges.set(key, {start, end});
+      }
+    }
+
+    for (const {start, end} of edges.values()) {
+      graphics.moveTo(start.x, start.y);
+      graphics.lineTo(end.x, end.y);
+    }
+  }
+
+  /**
+   * Build vertices matching the map grid's hex.
+   */
+  static #buildHexVertices(hex) {
     const vertices = canvas.grid.getVertices(hex);
     for (const vertex of vertices) {
       vertex.x += hex.center.x;
       vertex.y += hex.topLeft.y;
     }
-    return new PIXI.Polygon(vertices);
+    return vertices;
+  }
+
+  static #buildEdgeKey(start, end) {
+    const startKey = `${start.x.toFixed(3)},${start.y.toFixed(3)}`;
+    const endKey = `${end.x.toFixed(3)},${end.y.toFixed(3)}`;
+    return startKey < endKey ? `${startKey}:${endKey}` : `${endKey}:${startKey}`;
   };
 }

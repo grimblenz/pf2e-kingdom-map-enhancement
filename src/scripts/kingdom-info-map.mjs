@@ -114,6 +114,18 @@ export default class KingdomInfoMap {
     const tokens = buttons.tokens;
     if ( !tokens ) return;
 
+    const hexTool = tokens.tools.hex;
+    const handlerName = hexTool?.onChange ? "onChange" : hexTool?.onClick ? "onClick" : null;
+    if (handlerName) {
+      const originalHandler = hexTool[handlerName];
+      hexTool[handlerName] = (...args) => {
+        const result = originalHandler.apply(hexTool, args);
+        const active = args[1] ?? kingmaker.region.hud.enabled;
+        this.kingdomInfoLayer.setHexControlsActive(active);
+        return result;
+      };
+    }
+
     this.#infoTool = {
       name: "info",
       title: "Toggle Kingdom Info",
