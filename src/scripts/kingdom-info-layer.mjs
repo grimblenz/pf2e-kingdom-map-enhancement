@@ -29,16 +29,17 @@ export default class KingdomInfoLayer extends PIXI.Container {
     const scalefactor = icon_size / 512 //really need to replace this so we dont assume 512x512 icons
     const icon_pad = 10
     const hexes = kingmaker.region.hexes.filter(h => h.data.exploration == 1);
+    const reconOutline = this.addChild(new PIXI.Graphics());
+    reconOutline.lineStyle({color: 0x00ff00, width: 4});
+
     for ( const hex of hexes ) {
       const {x, y} = hex.center;
       const tx = hex.topLeft.x;
       const ty = hex.topLeft.y;
 
-      // Mark the hex as reconnoitered
-      const reconimg = this.addChild(new PIXI.Sprite(this.assets["recon"]));
-      reconimg.anchor.set(0.5, 0.5);
-      reconimg.position.set(x, (ty + (y - ty) / 4));
-      reconimg.scale.set(scalefactor, scalefactor);
+      if (!hex.data.claimed) {
+        reconOutline.drawShape(KingdomInfoLayer.#buildHexPolygon(hex));
+      }
 
       if (hex.data.showResources == true) {
         
@@ -135,15 +136,14 @@ export default class KingdomInfoLayer extends PIXI.Container {
   }
 
   /**
-    * A helper function to draw a diamond section of a hexagon
+    * Build a polygon matching the map grid's hex.
     */
-  static #buildHexDiamond(x, y, size) {
-    const h = size / 2;
-    return new PIXI.Polygon([
-      x, y - h,
-      x + size, y,
-      x, y + h,
-      x - size, y,
-    ]);
+  static #buildHexPolygon(hex) {
+    const vertices = canvas.grid.getVertices(hex);
+    for (const vertex of vertices) {
+      vertex.x += hex.center.x;
+      vertex.y += hex.topLeft.y;
+    }
+    return new PIXI.Polygon(vertices);
   };
 }
