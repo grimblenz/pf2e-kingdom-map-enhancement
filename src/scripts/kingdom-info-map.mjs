@@ -37,7 +37,6 @@ export default class KingdomInfoMap {
 
   async loadTextures() {
     PIXI.Assets.addBundle("kingdom-info-layer", [
-      { alias: "recon", src: "modules/pf2e-kingdom-map-enhancement/assets/img/recon.png" },
       { alias: "camp_quarry", src: "modules/pf2e-kingdom-map-enhancement/assets/img/quarry.png" },
       { alias: "camp_lumber", src: "modules/pf2e-kingdom-map-enhancement/assets/img/lumbercamp.png" },
       { alias: "camp_mine", src: "modules/pf2e-kingdom-map-enhancement/assets/img/mine.png" },
