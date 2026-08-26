@@ -10,6 +10,7 @@ export default class KingdomInfoLayer extends PIXI.Container {
       // Create a resource bundle for the icons and load them
       this.assets = null;
       this.reconOutline = null;
+      this.onRender = () => this.setHexControlsActive(kingmaker.region.hud.enabled);
     }
   
   /**
