@@ -85,7 +85,6 @@ export default class KingdomInfoMap {
    */
   _onDraw() {
     if ( !this.active ) return;
-    this.kingdomInfoLayer.draw();
   }
 
   /* -------------------------------------------- */
@@ -97,9 +96,9 @@ export default class KingdomInfoMap {
   _onReady() {
     if ( !this.active ) return;
 
-    // canvas.interface.grid.addChildAt(this.kingdomInfoLayer, canvas.interface.grid.children.indexOf(canvas.interface.grid.borders));
+    this.kingdomInfoLayer.loadAssets(this.assets);
     canvas.interface.grid.addChild(this.kingdomInfoLayer);
-
+    this.kingdomInfoLayer.draw();
   }
 
   /* -------------------------------------------- */
