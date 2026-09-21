@@ -10,7 +10,7 @@ export default class KingdomInfoLayer extends PIXI.Container {
       // Create a resource bundle for the icons and load them
       this.assets = null;
       this.reconOutline = null;
-      this.onRender = () => this.setHexControlsActive(kingmaker.region.hud.enabled);
+      this.onRender = () => this.setHexControlsActive(kingmaker.region.kingdomLayer?.visible ?? false);
     }
   
   /**
@@ -32,12 +32,17 @@ export default class KingdomInfoLayer extends PIXI.Container {
     const icon_pad = 10
     const hexes = kingmaker.region.hexes.filter(h => h.data.exploration == 1);
     this.reconOutline = this.addChild(new PIXI.Graphics());
-    this.reconOutline.lineStyle({color: 0x00ff00, width: 4});
-    KingdomInfoLayer.#drawRegionOutline(
-      this.reconOutline,
-      hexes.filter(hex => !hex.data.claimed)
-    );
-    this.setHexControlsActive(kingmaker.region.hud.enabled);
+    const reconPolygons = KingdomInfoLayer.#buildPolygons(hexes.filter(hex => !hex.data.claimed));
+    const reconColor = Color.from("00FF00");
+    this.reconOutline.beginFill(reconColor, 0).lineStyle({alignment: 0, color: reconColor, width: 4});
+    for (const polygon of reconPolygons) {
+      this.reconOutline.drawShape(polygon.outer);
+      for (const hole of polygon.holes) {
+        this.reconOutline.beginHole(0xFFFFFF).drawShape(hole).endHole();
+      }
+    }
+    this.reconOutline.endFill();
+    this.setHexControlsActive(kingmaker.region.kingdomLayer?.visible ?? false);
 
     for ( const hex of hexes ) {
       const {x, y} = hex.center;
@@ -146,44 +151,37 @@ export default class KingdomInfoLayer extends PIXI.Container {
   }
 
   /**
-   * Draw only edges that are not shared by two reconnoitered hexes.
+   * Combine reconnoitered hexes into polygon regions.
    */
-  static #drawRegionOutline(graphics, hexes) {
-    const edges = new Map();
+  static #buildPolygons(hexes) {
+    const getVertices = hex => {
+      const center = hex.center;
+      const scale = (hex.grid.sizeY + 2) / hex.grid.sizeY;
+      return canvas.grid.getShape(hex.offset).map(point => ({
+        x: center.x + (point.x * scale),
+        y: center.y + (point.y * scale)
+      }));
+    };
+    const clipper = new ClipperLib.Clipper();
+    const polyTree = new ClipperLib.PolyTree();
 
+    clipper.AddPath([], ClipperLib.PolyType.ptSubject, true);
     for (const hex of hexes) {
-      const vertices = KingdomInfoLayer.#buildHexVertices(hex);
-      for (let i = 0; i < vertices.length; i++) {
-        const start = vertices[i];
-        const end = vertices[(i + 1) % vertices.length];
-        const key = KingdomInfoLayer.#buildEdgeKey(start, end);
-
-        if (edges.has(key)) edges.delete(key);
-        else edges.set(key, {start, end});
-      }
+      const polygon = new PIXI.Polygon(getVertices(hex));
+      clipper.AddPath(polygon.toClipperPoints(), ClipperLib.PolyType.ptClip, true);
     }
+    clipper.Execute(
+      ClipperLib.ClipType.ctUnion,
+      polyTree,
+      ClipperLib.PolyFillType.pftEvenOdd,
+      ClipperLib.PolyFillType.pftNonZero
+    );
 
-    for (const {start, end} of edges.values()) {
-      graphics.moveTo(start.x, start.y);
-      graphics.lineTo(end.x, end.y);
+    const polygons = ClipperLib.JS.PolyTreeToExPolygons(polyTree);
+    for (const polygon of polygons) {
+      polygon.outer = PIXI.Polygon.fromClipperPoints(polygon.outer);
+      polygon.holes = polygon.holes.map(hole => PIXI.Polygon.fromClipperPoints(hole));
     }
-  }
-
-  /**
-   * Build vertices matching the map grid's hex.
-   */
-  static #buildHexVertices(hex) {
-    const vertices = canvas.grid.getVertices(hex);
-    for (const vertex of vertices) {
-      vertex.x += hex.center.x;
-      vertex.y += hex.topLeft.y;
-    }
-    return vertices;
-  }
-
-  static #buildEdgeKey(start, end) {
-    const startKey = `${start.x.toFixed(3)},${start.y.toFixed(3)}`;
-    const endKey = `${end.x.toFixed(3)},${end.y.toFixed(3)}`;
-    return startKey < endKey ? `${startKey}:${endKey}` : `${endKey}:${startKey}`;
+    return polygons;
   };
 }
